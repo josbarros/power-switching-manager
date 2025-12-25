@@ -20,82 +20,68 @@ import Gio from 'gi://Gio';
 import UPowerGlib from 'gi://UPowerGlib';
 
 export default class PlainExampleExtension extends Extension {
-    #gnomeSettings
-    #client
-    #settings
+    #gnomeSettingsClient
+    #powerClient
+    #userSettingsClient
 
     #powerStatusChangeId
     #batteryThemeChangeId
     #powerThemeChangeId
 
-    static #batterySetting = "battery-theme"
-    static #powerSetting = "power-theme"
+    static #BATTERY_USER_SETTING = "battery-theme"
+    static #POWER_USER_SETTING = "power-theme"
+    static #GNOME_THEME_SETTING = "color-scheme"
 
     enable() {
-        this.#gnomeSettings = new Gio.Settings({ schema: 'org.gnome.desktop.interface' })
-        this.#client = UPowerGlib.Client.new_full(null);
+        this.#gnomeSettingsClient = new Gio.Settings({ schema: 'org.gnome.desktop.interface' })
+        this.#powerClient = UPowerGlib.Client.new_full(null);
         // this.#settings = this.Settings()
 
         // this.#batteryThemeChangeId = this.#settings.connect(`changed::${PlainExampleExtension.#batterySetting}`,
-        //     () => this.#applyBatteryTheme())
+        //     () => if(this.#powerClient.onBattery) this.#applyTheme())
         // this.#powerThemeChangeId = this.#settings.connect(`changed::${PlainExampleExtension.#powerSetting}`,
-        //     () => this.#applyPowerTheme())
-        this.#powerStatusChangeId = this.#client.connect('notify::on-battery',
-            () => this.#applyCurrentTheme())
+        //     () => if(!this.#powerCLient.onBattery) this.#applyTheme())
+        this.#powerStatusChangeId = this.#powerClient.connect('notify::on-battery',
+            () => this.#applyTheme())
 
-        this.#applyCurrentTheme()
+        this.#applyTheme()
     }
 
-    #applyBatteryTheme() {
-        const isOnBattery = this.#client.onBattery
-        if (!isOnBattery) {
+    #applyTheme() {
+        const isOnBattery = this.#powerClient.onBattery
+        const desiredThemeSetting = isOnBattery ?
+            PlainExampleExtension.#BATTERY_USER_SETTING : PlainExampleExtension.#POWER_USER_SETTING
+
+        const newTheme = isOnBattery ? "default" : "prefer-dark"
+        // const newTheme = this.#settings.get_string(desiredThemeSetting)
+        if (!newTheme) {
             return
         }
-        this.#applyThemeString(PlainExampleExtension.#batterySetting)
-    }
-
-    #applyPowerTheme() {
-        const isOnPower = !this.#client.onBattery
-        if (!isOnPower) {
-            return
+        const currentTheme = this.#gnomeSettingsClient.get_string(PlainExampleExtension.#GNOME_THEME_SETTING)
+        if (newTheme === currentTheme) {
+            return // avoid rewritting the same string as the consequences are not known
         }
-        this.#applyThemeString(PlainExampleExtension.#powerSetting)
-    }
-
-    #applyCurrentTheme() {
-        const themeString = this.#client.onBattery ?
-            PlainExampleExtension.#batterySetting : PlainExampleExtension.#powerSetting
-        this.#applyThemeString(themeString)
-    }
-
-
-    #applyThemeString(themeString) {
-        // const theme = this.#settings.get_string(themeString)
-        // if (!theme) {
-        //     return
-        // }
-        const theme = themeString === PlainExampleExtension.#powerSetting ? "prefer-dark" : "default"
-        this.#gnomeSettings.set_string('color-scheme', theme)
+        this.#gnomeSettingsClient.set_string(PlainExampleExtension.#GNOME_THEME_SETTING, newTheme)
     }
 
     disable() {
         if (this.#batteryThemeChangeId) {
-            this.#settings.disconnect(this.#batteryThemeChangeId)
+            this.#userSettingsClient.disconnect(this.#batteryThemeChangeId)
             this.#batteryThemeChangeId = null
         }
 
         if (this.#powerThemeChangeId) {
-            this.#settings.disconnect(this.#powerThemeChangeId)
+            this.#userSettingsClient.disconnect(this.#powerThemeChangeId)
             this.#powerThemeChangeId = null
         }
 
         if (this.#powerStatusChangeId) {
-            this.#client.disconnect(this.#powerStatusChangeId)
+            this.#powerClient.disconnect(this.#powerStatusChangeId)
             this.#powerStatusChangeId = null
         }
 
-        this.#settings = null
-        this.#gnomeSettings = null
-        this.#client = null
+        this.#userSettingsClient = null
+        this.#gnomeSettingsClient = null
+        this.#powerClient = null
     }
 }
