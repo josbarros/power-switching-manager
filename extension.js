@@ -20,28 +20,82 @@ import Gio from 'gi://Gio';
 import UPowerGlib from 'gi://UPowerGlib';
 
 export default class PlainExampleExtension extends Extension {
-    #settings
+    #gnomeSettings
     #client
-    #signalId
+    #settings
+
+    #powerStatusChangeId
+    #batteryThemeChangeId
+    #powerThemeChangeId
+
+    static #batterySetting = "battery-theme"
+    static #powerSetting = "power-theme"
 
     enable() {
-        this.#settings = new Gio.Settings({ schema: 'org.gnome.desktop.interface' })
+        this.#gnomeSettings = new Gio.Settings({ schema: 'org.gnome.desktop.interface' })
         this.#client = UPowerGlib.Client.new_full(null);
-        this.#signalId = this.#client.connect('notify::on-battery', () => this.#applyTheme())
-        this.#applyTheme()
+        // this.#settings = this.Settings()
+
+        // this.#batteryThemeChangeId = this.#settings.connect(`changed::${PlainExampleExtension.#batterySetting}`,
+        //     () => this.#applyBatteryTheme())
+        // this.#powerThemeChangeId = this.#settings.connect(`changed::${PlainExampleExtension.#powerSetting}`,
+        //     () => this.#applyPowerTheme())
+        this.#powerStatusChangeId = this.#client.connect('notify::on-battery',
+            () => this.#applyCurrentTheme())
+
+        this.#applyCurrentTheme()
     }
 
-    #applyTheme() {
-        const setting = this.#client.onBattery ? 'default' : 'prefer-dark'
-        this.#settings.set_string('color-scheme', setting)
+    #applyBatteryTheme() {
+        const isOnBattery = this.#client.onBattery
+        if (!isOnBattery) {
+            return
+        }
+        this.#applyThemeString(PlainExampleExtension.#batterySetting)
+    }
+
+    #applyPowerTheme() {
+        const isOnPower = !this.#client.onBattery
+        if (!isOnPower) {
+            return
+        }
+        this.#applyThemeString(PlainExampleExtension.#powerSetting)
+    }
+
+    #applyCurrentTheme() {
+        const themeString = this.#client.onBattery ?
+            PlainExampleExtension.#batterySetting : PlainExampleExtension.#powerSetting
+        this.#applyThemeString(themeString)
+    }
+
+
+    #applyThemeString(themeString) {
+        // const theme = this.#settings.get_string(themeString)
+        // if (!theme) {
+        //     return
+        // }
+        const theme = themeString === PlainExampleExtension.#powerSetting ? "prefer-dark" : "default"
+        this.#gnomeSettings.set_string('color-scheme', theme)
     }
 
     disable() {
-        if (this.#signalId){
-            this.#client.disconnect(this.#signalId)
+        if (this.#batteryThemeChangeId) {
+            this.#settings.disconnect(this.#batteryThemeChangeId)
+            this.#batteryThemeChangeId = null
         }
-        this.#signalId = null
+
+        if (this.#powerThemeChangeId) {
+            this.#settings.disconnect(this.#powerThemeChangeId)
+            this.#powerThemeChangeId = null
+        }
+
+        if (this.#powerStatusChangeId) {
+            this.#client.disconnect(this.#powerStatusChangeId)
+            this.#powerStatusChangeId = null
+        }
+
         this.#settings = null
+        this.#gnomeSettings = null
         this.#client = null
     }
 }
