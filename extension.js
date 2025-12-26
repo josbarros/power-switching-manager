@@ -15,9 +15,9 @@
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import Gio from 'gi://Gio';
-import UPowerGlib from 'gi://UPowerGlib';
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js'
+import Gio from 'gi://Gio'
+import UPowerGlib from 'gi://UPowerGlib'
 
 export default class PlainExampleExtension extends Extension {
     #gnomeSettingsClient
@@ -34,13 +34,15 @@ export default class PlainExampleExtension extends Extension {
 
     enable() {
         this.#gnomeSettingsClient = new Gio.Settings({ schema: 'org.gnome.desktop.interface' })
-        this.#powerClient = UPowerGlib.Client.new_full(null);
-        // this.#settings = this.Settings()
+        this.#powerClient = UPowerGlib.Client.new(null);
+        this.#userSettingsClient = this.getSettings()
 
-        // this.#batteryThemeChangeId = this.#settings.connect(`changed::${PlainExampleExtension.#batterySetting}`,
-        //     () => if(this.#powerClient.onBattery) this.#applyTheme())
-        // this.#powerThemeChangeId = this.#settings.connect(`changed::${PlainExampleExtension.#powerSetting}`,
-        //     () => if(!this.#powerCLient.onBattery) this.#applyTheme())
+        this.#batteryThemeChangeId = this.#userSettingsClient.connect(`changed::${PlainExampleExtension.#BATTERY_USER_SETTING}`,
+            () => { if (this.#powerClient.onBattery) this.#applyTheme() })
+
+        this.#powerThemeChangeId = this.#userSettingsClient.connect(`changed::${PlainExampleExtension.#POWER_USER_SETTING}`,
+            () => { if (!this.#powerClient.onBattery) this.#applyTheme() })
+
         this.#powerStatusChangeId = this.#powerClient.connect('notify::on-battery',
             () => this.#applyTheme())
 
@@ -52,8 +54,8 @@ export default class PlainExampleExtension extends Extension {
         const desiredThemeSetting = isOnBattery ?
             PlainExampleExtension.#BATTERY_USER_SETTING : PlainExampleExtension.#POWER_USER_SETTING
 
-        const newTheme = isOnBattery ? "default" : "prefer-dark"
-        // const newTheme = this.#settings.get_string(desiredThemeSetting)
+        // const newTheme = isOnBattery ? "default" : "prefer-dark"
+        const newTheme = this.#userSettingsClient.get_string(desiredThemeSetting)
         if (!newTheme) {
             return
         }
