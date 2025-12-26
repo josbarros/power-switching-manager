@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema
+    id="org.gnome.shell.extensions.plain-example"
+    path="/org/gnome/shell/extensions/plain-example/">
+
+    <key name="battery-theme" type="s">
+      <default>'default'</default>
+      <summary>Theme when on battery</summary>
+      <description>
+        Color scheme to use when running on battery power.
+      </description>
+    </key>
+
+    <key name="power-theme" type="s">
+      <default>'prefer-dark'</default>
+      <summary>Theme when plugged in</summary>
+      <description>
+        Color scheme to use when connected to AC power.
+      </description>
+    </key>
+
+  </schema>
+</schemalist>
