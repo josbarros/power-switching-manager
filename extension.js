@@ -26,13 +26,6 @@ export default class PlainExampleExtension extends Extension {
     #powerClient
     #userSettingsClient
 
-    #powerStatusChangeId
-
-    #batteryThemeChangeId
-    #powerThemeChangeId
-    #batteryBrightnessChangeId
-    #powerBrightnessChangeId
-
     static #GNOME_THEME_SETTING = "color-scheme"
 
     enable() {
@@ -43,12 +36,12 @@ export default class PlainExampleExtension extends Extension {
         const themeHandler = x => { if (this.#powerClient.onBattery === x) this.#applyTheme(x) }
         const brightnessHandler = x => { if (this.#powerClient.onBattery === x) this.#applyBrightness(x) }
 
-        this.#batteryThemeChangeId = this.#userSettingsClient.connect(`changed::${BATTERY_THEME_SETTING}`, () => themeHandler(true))
-        this.#powerThemeChangeId = this.#userSettingsClient.connect(`changed::${POWER_THEME_SETTING}`, () => themeHandler(false))
-        this.#batteryBrightnessChangeId = this.#userSettingsClient.connect(`changed::${BATTERY_BRIGHTNESS_SETTING}`, () => brightnessHandler(true))
-        this.#powerBrightnessChangeId = this.#userSettingsClient.connect(`changed::${POWER_BRIGHTNESS_SETTING}`, () => brightnessHandler(false))
+        this.#userSettingsClient.connectObject(`changed::${BATTERY_THEME_SETTING}`, () => themeHandler(true), this)
+        this.#userSettingsClient.connectObject(`changed::${POWER_THEME_SETTING}`, () => themeHandler(false), this)
+        this.#userSettingsClient.connectObject(`changed::${BATTERY_BRIGHTNESS_SETTING}`, () => brightnessHandler(true), this)
+        this.#userSettingsClient.connectObject(`changed::${POWER_BRIGHTNESS_SETTING}`, () => brightnessHandler(false), this)
 
-        this.#powerStatusChangeId = this.#powerClient.connect('notify::on-battery', () => this.#doAll())
+        this.#powerClient.connectObject('notify::on-battery', () => this.#doAll(), this)
 
         this.#doAll()
     }
@@ -85,30 +78,8 @@ export default class PlainExampleExtension extends Extension {
     }
 
     disable() {
-        if (this.#batteryThemeChangeId) {
-            this.#userSettingsClient.disconnect(this.#batteryThemeChangeId)
-            this.#batteryThemeChangeId = null
-        }
-
-        if (this.#powerThemeChangeId) {
-            this.#userSettingsClient.disconnect(this.#powerThemeChangeId)
-            this.#powerThemeChangeId = null
-        }
-
-        if (this.#batteryBrightnessChangeId) {
-            this.#userSettingsClient.disconnect(this.#batteryBrightnessChangeId)
-            this.#batteryBrightnessChangeId = null
-        }
-
-        if (this.#powerBrightnessChangeId) {
-            this.#userSettingsClient.disconnect(this.#powerBrightnessChangeId)
-            this.#powerBrightnessChangeId = null
-        }
-
-        if (this.#powerStatusChangeId) {
-            this.#powerClient.disconnect(this.#powerStatusChangeId)
-            this.#powerStatusChangeId = null
-        }
+        this.#userSettingsClient?.disconnectObject(this)
+        this.#powerClient?.disconnectObject(this)
 
         this.#userSettingsClient = null
         this.#gnomeSettingsClient = null
