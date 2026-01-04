@@ -40,8 +40,8 @@ export default class PlainExampleExtension extends Extension {
     static #GNOME_THEME_SETTING = "color-scheme"
 
     enable() {
-        this.#gnomeSettingsClient = new Gio.Settings({ schema: 'org.gnome.desktop.interface' })
-        this.#powerClient = UPowerGlib.Client.new(null);
+        this.#gnomeSettingsClient = new Gio.Settings({ schema_id: 'org.gnome.desktop.interface' })
+        this.#powerClient = UPowerGlib.Client.new();
         this.#userSettingsClient = this.getSettings()
 
         this.#batteryThemeChangeId = this.#userSettingsClient.connect(`changed::${PlainExampleExtension.#BATTERY_THEME_SETTING}`,
@@ -52,7 +52,7 @@ export default class PlainExampleExtension extends Extension {
 
         this.#batteryBrightnessChangeId = this.#userSettingsClient.connect(`changed::${PlainExampleExtension.#BATTERY_BRIGHTNESS_SETTING}`,
             () => { if (this.#powerClient.onBattery) this.#applyBrightness() })
-                
+
         this.#powerBrightnessChangeId = this.#userSettingsClient.connect(`changed::${PlainExampleExtension.#POWER_BRIGHTNESS_SETTING}`,
             () => { if (!this.#powerClient.onBattery) this.#applyBrightness() })
 
@@ -62,12 +62,15 @@ export default class PlainExampleExtension extends Extension {
         this.#doAll()
     }
 
-    #doAll(){
+    #doAll() {
         this.#applyBrightness()
         this.#applyTheme()
     }
 
-    #applyBrightness(){
+    #applyBrightness() {
+        if (!Main.brightnessManager?.globalScale) {
+            return
+        }
         const isOnBattery = this.#powerClient.onBattery
         // const desiredBrightnessSetting = isOnBattery ? PlainExampleExtension.#BATTERY_BRIGHTNESS_SETTING : PlainExampleExtension.#POWER_BRIGHTNESS_SETTING
         // const newValue = this.#userSettingsClient.get_string(desiredBrightnessSetting)
@@ -101,12 +104,12 @@ export default class PlainExampleExtension extends Extension {
             this.#powerThemeChangeId = null
         }
 
-        if (this.#batteryBrightnessChangeId){
+        if (this.#batteryBrightnessChangeId) {
             this.#userSettingsClient.disconnect(this.#batteryBrightnessChangeId)
             this.#batteryBrightnessChangeId = null
         }
 
-        if (this.#powerBrightnessChangeId){
+        if (this.#powerBrightnessChangeId) {
             this.#userSettingsClient.disconnect(this.#powerBrightnessChangeId)
             this.#powerBrightnessChangeId = null
         }
