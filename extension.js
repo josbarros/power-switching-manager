@@ -75,6 +75,10 @@ export default class PlainExampleExtension extends Extension {
         // const desiredBrightnessSetting = isOnBattery ? PlainExampleExtension.#BATTERY_BRIGHTNESS_SETTING : PlainExampleExtension.#POWER_BRIGHTNESS_SETTING
         // const newValue = this.#userSettingsClient.get_string(desiredBrightnessSetting)
         const newValue = isOnBattery ? 0.2 : 1.0
+        const currentValue = Main.brightnessManager.globalScale.value
+        if (newValue === currentValue) {
+            return // avoid rewritting the same value as the consequences are not known
+        }
         Main.brightnessManager.globalScale.value = newValue
     }
 
@@ -83,9 +87,6 @@ export default class PlainExampleExtension extends Extension {
         const desiredThemeSetting = isOnBattery ? PlainExampleExtension.#BATTERY_THEME_SETTING : PlainExampleExtension.#POWER_THEME_SETTING
         // const newTheme = isOnBattery ? "default" : "prefer-dark"
         const newTheme = this.#userSettingsClient.get_string(desiredThemeSetting)
-        if (!newTheme) {
-            return
-        }
         const currentTheme = this.#gnomeSettingsClient.get_string(PlainExampleExtension.#GNOME_THEME_SETTING)
         if (newTheme === currentTheme) {
             return // avoid rewritting the same string as the consequences are not known
