@@ -15,6 +15,7 @@
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
+import { BATTERY_BRIGHTNESS_SETTING, POWER_BRIGHTNESS_SETTING, BATTERY_THEME_SETTING, POWER_THEME_SETTING } from './constants.js'
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js'
 import Gio from 'gi://Gio'
 import UPowerGlib from 'gi://UPowerGlib'
@@ -32,11 +33,6 @@ export default class PlainExampleExtension extends Extension {
     #batteryBrightnessChangeId
     #powerBrightnessChangeId
 
-    static #BATTERY_BRIGHTNESS_SETTING = "battery-brightness"
-    static #POWER_BRIGHTNESS_SETTING = "power-brightness"
-    static #BATTERY_THEME_SETTING = "battery-theme"
-    static #POWER_THEME_SETTING = "power-theme"
-
     static #GNOME_THEME_SETTING = "color-scheme"
 
     enable() {
@@ -44,16 +40,16 @@ export default class PlainExampleExtension extends Extension {
         this.#powerClient = UPowerGlib.Client.new();
         this.#userSettingsClient = this.getSettings()
 
-        this.#batteryThemeChangeId = this.#userSettingsClient.connect(`changed::${PlainExampleExtension.#BATTERY_THEME_SETTING}`,
+        this.#batteryThemeChangeId = this.#userSettingsClient.connect(`changed::${BATTERY_THEME_SETTING}`,
             () => { if (this.#powerClient.onBattery) this.#applyTheme(true) })
 
-        this.#powerThemeChangeId = this.#userSettingsClient.connect(`changed::${PlainExampleExtension.#POWER_THEME_SETTING}`,
+        this.#powerThemeChangeId = this.#userSettingsClient.connect(`changed::${POWER_THEME_SETTING}`,
             () => { if (!this.#powerClient.onBattery) this.#applyTheme(false) })
 
-        this.#batteryBrightnessChangeId = this.#userSettingsClient.connect(`changed::${PlainExampleExtension.#BATTERY_BRIGHTNESS_SETTING}`,
+        this.#batteryBrightnessChangeId = this.#userSettingsClient.connect(`changed::${BATTERY_BRIGHTNESS_SETTING}`,
             () => { if (this.#powerClient.onBattery) this.#applyBrightness(true) })
 
-        this.#powerBrightnessChangeId = this.#userSettingsClient.connect(`changed::${PlainExampleExtension.#POWER_BRIGHTNESS_SETTING}`,
+        this.#powerBrightnessChangeId = this.#userSettingsClient.connect(`changed::${POWER_BRIGHTNESS_SETTING}`,
             () => { if (!this.#powerClient.onBattery) this.#applyBrightness(false) })
 
         this.#powerStatusChangeId = this.#powerClient.connect('notify::on-battery',
@@ -72,7 +68,7 @@ export default class PlainExampleExtension extends Extension {
         if (!Main.brightnessManager?.globalScale) {
             return
         }
-        // const desiredBrightnessSetting = isOnBattery ? PlainExampleExtension.#BATTERY_BRIGHTNESS_SETTING : PlainExampleExtension.#POWER_BRIGHTNESS_SETTING
+        // const desiredBrightnessSetting = isOnBattery ? BATTERY_BRIGHTNESS_SETTING : POWER_BRIGHTNESS_SETTING
         // const newValue = this.#userSettingsClient.get_string(desiredBrightnessSetting)
         const newValue = isOnBattery ? 0.2 : 1.0
         const currentValue = Main.brightnessManager.globalScale.value
@@ -83,7 +79,7 @@ export default class PlainExampleExtension extends Extension {
     }
 
     #applyTheme(isOnBattery) {
-        const desiredThemeSetting = isOnBattery ? PlainExampleExtension.#BATTERY_THEME_SETTING : PlainExampleExtension.#POWER_THEME_SETTING
+        const desiredThemeSetting = isOnBattery ? BATTERY_THEME_SETTING : POWER_THEME_SETTING
         // const newTheme = isOnBattery ? "default" : "prefer-dark"
         const newTheme = this.#userSettingsClient.get_string(desiredThemeSetting)
         const currentTheme = this.#gnomeSettingsClient.get_string(PlainExampleExtension.#GNOME_THEME_SETTING)
