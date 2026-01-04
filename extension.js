@@ -18,6 +18,7 @@
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js'
 import Gio from 'gi://Gio'
 import UPowerGlib from 'gi://UPowerGlib'
+import * as Main from 'resource:///org/gnome/shell/ui/main.js'
 
 export default class PlainExampleExtension extends Extension {
     #gnomeSettingsClient
@@ -25,11 +26,17 @@ export default class PlainExampleExtension extends Extension {
     #userSettingsClient
 
     #powerStatusChangeId
+
     #batteryThemeChangeId
     #powerThemeChangeId
+    #batteryBrightnessChangeId
+    #powerBrightnessChangeId
 
-    static #BATTERY_USER_SETTING = "battery-theme"
-    static #POWER_USER_SETTING = "power-theme"
+    static #BATTERY_BRIGHTNESS_SETTING = "battery-brightness"
+    static #POWER_BRIGHTNESS_SETTING = "power-brightness"
+    static #BATTERY_THEME_SETTING = "battery-theme"
+    static #POWER_THEME_SETTING = "power-theme"
+
     static #GNOME_THEME_SETTING = "color-scheme"
 
     enable() {
@@ -37,23 +44,40 @@ export default class PlainExampleExtension extends Extension {
         this.#powerClient = UPowerGlib.Client.new(null);
         this.#userSettingsClient = this.getSettings()
 
-        this.#batteryThemeChangeId = this.#userSettingsClient.connect(`changed::${PlainExampleExtension.#BATTERY_USER_SETTING}`,
+        this.#batteryThemeChangeId = this.#userSettingsClient.connect(`changed::${PlainExampleExtension.#BATTERY_THEME_SETTING}`,
             () => { if (this.#powerClient.onBattery) this.#applyTheme() })
 
-        this.#powerThemeChangeId = this.#userSettingsClient.connect(`changed::${PlainExampleExtension.#POWER_USER_SETTING}`,
+        this.#powerThemeChangeId = this.#userSettingsClient.connect(`changed::${PlainExampleExtension.#POWER_THEME_SETTING}`,
             () => { if (!this.#powerClient.onBattery) this.#applyTheme() })
 
-        this.#powerStatusChangeId = this.#powerClient.connect('notify::on-battery',
-            () => this.#applyTheme())
+        this.#batteryBrightnessChangeId = this.#userSettingsClient.connect(`changed::${PlainExampleExtension.#BATTERY_BRIGHTNESS_SETTING}`,
+            () => { if (this.#powerClient.onBattery) this.#applyBrightness() })
+                
+        this.#powerBrightnessChangeId = this.#userSettingsClient.connect(`changed::${PlainExampleExtension.#POWER_BRIGHTNESS_SETTING}`,
+            () => { if (!this.#powerClient.onBattery) this.#applyBrightness() })
 
+        this.#powerStatusChangeId = this.#powerClient.connect('notify::on-battery',
+            () => this.#doAll())
+
+        this.#doAll()
+    }
+
+    #doAll(){
+        this.#applyBrightness()
         this.#applyTheme()
+    }
+
+    #applyBrightness(){
+        const isOnBattery = this.#powerClient.onBattery
+        // const desiredBrightnessSetting = isOnBattery ? PlainExampleExtension.#BATTERY_BRIGHTNESS_SETTING : PlainExampleExtension.#POWER_BRIGHTNESS_SETTING
+        // const newValue = this.#userSettingsClient.get_string(desiredBrightnessSetting)
+        const newValue = isOnBattery ? 0.2 : 1.0
+        Main.brightnessManager.globalScale.value = newValue
     }
 
     #applyTheme() {
         const isOnBattery = this.#powerClient.onBattery
-        const desiredThemeSetting = isOnBattery ?
-            PlainExampleExtension.#BATTERY_USER_SETTING : PlainExampleExtension.#POWER_USER_SETTING
-
+        const desiredThemeSetting = isOnBattery ? PlainExampleExtension.#BATTERY_THEME_SETTING : PlainExampleExtension.#POWER_THEME_SETTING
         // const newTheme = isOnBattery ? "default" : "prefer-dark"
         const newTheme = this.#userSettingsClient.get_string(desiredThemeSetting)
         if (!newTheme) {
@@ -75,6 +99,16 @@ export default class PlainExampleExtension extends Extension {
         if (this.#powerThemeChangeId) {
             this.#userSettingsClient.disconnect(this.#powerThemeChangeId)
             this.#powerThemeChangeId = null
+        }
+
+        if (this.#batteryBrightnessChangeId){
+            this.#userSettingsClient.disconnect(this.#batteryBrightnessChangeId)
+            this.#batteryBrightnessChangeId = null
+        }
+
+        if (this.#powerBrightnessChangeId){
+            this.#userSettingsClient.disconnect(this.#powerBrightnessChangeId)
+            this.#powerBrightnessChangeId = null
         }
 
         if (this.#powerStatusChangeId) {
