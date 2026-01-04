@@ -40,20 +40,15 @@ export default class PlainExampleExtension extends Extension {
         this.#powerClient = UPowerGlib.Client.new();
         this.#userSettingsClient = this.getSettings()
 
-        this.#batteryThemeChangeId = this.#userSettingsClient.connect(`changed::${BATTERY_THEME_SETTING}`,
-            () => { if (this.#powerClient.onBattery) this.#applyTheme(true) })
+        const themeHandler = x => { if (this.#powerClient.onBattery === x) this.#applyTheme(x) }
+        const brightnessHandler = x => { if (this.#powerClient.onBattery === x) this.#applyBrightness(x) }
 
-        this.#powerThemeChangeId = this.#userSettingsClient.connect(`changed::${POWER_THEME_SETTING}`,
-            () => { if (!this.#powerClient.onBattery) this.#applyTheme(false) })
+        this.#batteryThemeChangeId = this.#userSettingsClient.connect(`changed::${BATTERY_THEME_SETTING}`, () => themeHandler(true))
+        this.#powerThemeChangeId = this.#userSettingsClient.connect(`changed::${POWER_THEME_SETTING}`, () => themeHandler(false))
+        this.#batteryBrightnessChangeId = this.#userSettingsClient.connect(`changed::${BATTERY_BRIGHTNESS_SETTING}`, () => brightnessHandler(true))
+        this.#powerBrightnessChangeId = this.#userSettingsClient.connect(`changed::${POWER_BRIGHTNESS_SETTING}`, () => brightnessHandler(false))
 
-        this.#batteryBrightnessChangeId = this.#userSettingsClient.connect(`changed::${BATTERY_BRIGHTNESS_SETTING}`,
-            () => { if (this.#powerClient.onBattery) this.#applyBrightness(true) })
-
-        this.#powerBrightnessChangeId = this.#userSettingsClient.connect(`changed::${POWER_BRIGHTNESS_SETTING}`,
-            () => { if (!this.#powerClient.onBattery) this.#applyBrightness(false) })
-
-        this.#powerStatusChangeId = this.#powerClient.connect('notify::on-battery',
-            () => this.#doAll())
+        this.#powerStatusChangeId = this.#powerClient.connect('notify::on-battery', () => this.#doAll())
 
         this.#doAll()
     }
