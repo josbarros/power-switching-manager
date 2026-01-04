@@ -45,16 +45,16 @@ export default class PlainExampleExtension extends Extension {
         this.#userSettingsClient = this.getSettings()
 
         this.#batteryThemeChangeId = this.#userSettingsClient.connect(`changed::${PlainExampleExtension.#BATTERY_THEME_SETTING}`,
-            () => { if (this.#powerClient.onBattery) this.#applyTheme() })
+            () => { if (this.#powerClient.onBattery) this.#applyTheme(true) })
 
         this.#powerThemeChangeId = this.#userSettingsClient.connect(`changed::${PlainExampleExtension.#POWER_THEME_SETTING}`,
-            () => { if (!this.#powerClient.onBattery) this.#applyTheme() })
+            () => { if (!this.#powerClient.onBattery) this.#applyTheme(false) })
 
         this.#batteryBrightnessChangeId = this.#userSettingsClient.connect(`changed::${PlainExampleExtension.#BATTERY_BRIGHTNESS_SETTING}`,
-            () => { if (this.#powerClient.onBattery) this.#applyBrightness() })
+            () => { if (this.#powerClient.onBattery) this.#applyBrightness(true) })
 
         this.#powerBrightnessChangeId = this.#userSettingsClient.connect(`changed::${PlainExampleExtension.#POWER_BRIGHTNESS_SETTING}`,
-            () => { if (!this.#powerClient.onBattery) this.#applyBrightness() })
+            () => { if (!this.#powerClient.onBattery) this.#applyBrightness(false) })
 
         this.#powerStatusChangeId = this.#powerClient.connect('notify::on-battery',
             () => this.#doAll())
@@ -63,15 +63,15 @@ export default class PlainExampleExtension extends Extension {
     }
 
     #doAll() {
-        this.#applyBrightness()
-        this.#applyTheme()
+        const isOnBattery = this.#powerClient.onBattery
+        this.#applyBrightness(isOnBattery)
+        this.#applyTheme(isOnBattery)
     }
 
-    #applyBrightness() {
+    #applyBrightness(isOnBattery) {
         if (!Main.brightnessManager?.globalScale) {
             return
         }
-        const isOnBattery = this.#powerClient.onBattery
         // const desiredBrightnessSetting = isOnBattery ? PlainExampleExtension.#BATTERY_BRIGHTNESS_SETTING : PlainExampleExtension.#POWER_BRIGHTNESS_SETTING
         // const newValue = this.#userSettingsClient.get_string(desiredBrightnessSetting)
         const newValue = isOnBattery ? 0.2 : 1.0
@@ -82,8 +82,7 @@ export default class PlainExampleExtension extends Extension {
         Main.brightnessManager.globalScale.value = newValue
     }
 
-    #applyTheme() {
-        const isOnBattery = this.#powerClient.onBattery
+    #applyTheme(isOnBattery) {
         const desiredThemeSetting = isOnBattery ? PlainExampleExtension.#BATTERY_THEME_SETTING : PlainExampleExtension.#POWER_THEME_SETTING
         // const newTheme = isOnBattery ? "default" : "prefer-dark"
         const newTheme = this.#userSettingsClient.get_string(desiredThemeSetting)
