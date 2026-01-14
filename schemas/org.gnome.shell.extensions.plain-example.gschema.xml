@@ -38,5 +38,23 @@
       </description>
     </key>
 
+    <key name="battery-keyboard" type="i">
+      <default>0</default>
+      <range min="0" max="100"/>
+      <summary>Keyboard when on battery</summary>
+      <description>
+        Keyboard backlight value to use when running on battery power.
+      </description>
+    </key>
+
+    <key name="power-keyboard" type="i">
+      <default>100</default>
+      <range min="0" max="100"/>
+      <summary>Keyboard when plugged in</summary>
+      <description>
+        Keyboard backlight value to use when connected to AC power.
+      </description>
+    </key>
+
   </schema>
 </schemalist>

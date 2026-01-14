@@ -15,16 +15,27 @@
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
-import { BATTERY_BRIGHTNESS_SETTING, POWER_BRIGHTNESS_SETTING, BATTERY_THEME_SETTING, POWER_THEME_SETTING } from './constants.js'
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js'
+import {
+    BATTERY_BRIGHTNESS_SETTING, POWER_BRIGHTNESS_SETTING,
+    BATTERY_THEME_SETTING, POWER_THEME_SETTING,
+    BATTERY_KEYBOARD_SETTING, POWER_KEYBOARD_SETTING
+} from './constants.js'
+
 import Gio from 'gi://Gio'
 import UPowerGlib from 'gi://UPowerGlib'
+
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js'
 import * as Main from 'resource:///org/gnome/shell/ui/main.js'
+
+import { loadInterfaceXML } from 'resource:///org/gnome/shell/misc/fileUtils.js'
+const BrightnessInterface = loadInterfaceXML('org.gnome.SettingsDaemon.Power.Keyboard');
+const BrightnessProxy = Gio.DBusProxy.makeProxyWrapper(BrightnessInterface);
 
 export default class PlainExampleExtension extends Extension {
     #gnomeSettingsClient
     #powerClient
     #userSettingsClient
+    #keyboardClient
 
     static #GNOME_THEME_SETTING = "color-scheme"
 
@@ -32,14 +43,18 @@ export default class PlainExampleExtension extends Extension {
         this.#gnomeSettingsClient = new Gio.Settings({ schema_id: 'org.gnome.desktop.interface' })
         this.#powerClient = UPowerGlib.Client.new();
         this.#userSettingsClient = this.getSettings()
+        this.#keyboardClient = new BrightnessProxy(Gio.DBus.session, 'org.gnome.SettingsDaemon.Power', '/org/gnome/SettingsDaemon/Power')
 
         const themeHandler = x => { if (this.#powerClient.onBattery === x) this.#applyTheme(x) }
         const brightnessHandler = x => { if (this.#powerClient.onBattery === x) this.#applyBrightness(x) }
+        const backlightHandler = x => { if (this.#powerClient.onBattery === x) this.#applyBacklight(x) }
 
         this.#userSettingsClient.connectObject(`changed::${BATTERY_THEME_SETTING}`, () => themeHandler(true), this)
         this.#userSettingsClient.connectObject(`changed::${POWER_THEME_SETTING}`, () => themeHandler(false), this)
         this.#userSettingsClient.connectObject(`changed::${BATTERY_BRIGHTNESS_SETTING}`, () => brightnessHandler(true), this)
         this.#userSettingsClient.connectObject(`changed::${POWER_BRIGHTNESS_SETTING}`, () => brightnessHandler(false), this)
+        this.#userSettingsClient.connectObject(`changed::${BATTERY_KEYBOARD_SETTING}`, () => backlightHandler(true), this)
+        this.#userSettingsClient.connectObject(`changed::${POWER_KEYBOARD_SETTING}`, () => backlightHandler(false), this)
 
         this.#powerClient.connectObject('notify::on-battery', () => this.#doAll(), this)
 
@@ -50,6 +65,7 @@ export default class PlainExampleExtension extends Extension {
         const isOnBattery = this.#powerClient.onBattery
         this.#applyBrightness(isOnBattery)
         this.#applyTheme(isOnBattery)
+        this.#applyBacklight(isOnBattery)
     }
 
     #applyBrightness(isOnBattery) {
@@ -77,6 +93,17 @@ export default class PlainExampleExtension extends Extension {
         this.#gnomeSettingsClient.set_string(PlainExampleExtension.#GNOME_THEME_SETTING, newTheme)
     }
 
+    #applyBacklight(isOnBattery) {
+        // const desiredKeyboardSetting = isOnBattery ? BATTERY_KEYBOARD_SETTING : POWER_KEYBOARD_SETTING
+        // const newValue = this.#userSettingsClient.get_string(desiredKeyboardSetting)
+        const newValue = isOnBattery ? 0 : 100
+        const currentValue = this.#keyboardClient.Brightness
+        if (currentValue === newValue) {
+            return
+        }
+        this.#keyboardClient.Brightness = newValue
+    }
+
     disable() {
         this.#userSettingsClient?.disconnectObject(this)
         this.#powerClient?.disconnectObject(this)
@@ -84,5 +111,6 @@ export default class PlainExampleExtension extends Extension {
         this.#userSettingsClient = null
         this.#gnomeSettingsClient = null
         this.#powerClient = null
+        this.#keyboardClient = null
     }
 }
