@@ -1,7 +1,7 @@
 import Adw from 'gi://Adw'
 import Gtk from 'gi://Gtk'
 import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js'
-import { BATTERY_BRIGHTNESS_SETTING, POWER_BRIGHTNESS_SETTING, BATTERY_THEME_SETTING, POWER_THEME_SETTING } from './constants.js'
+import { BATTERY_BRIGHTNESS_SETTING, POWER_BRIGHTNESS_SETTING, BATTERY_THEME_SETTING, POWER_THEME_SETTING, BATTERY_KEYBOARD_SETTING, POWER_KEYBOARD_SETTING } from './constants.js'
 
 export default class PlainExamplePreferences extends ExtensionPreferences {
     #settings
@@ -54,8 +54,26 @@ export default class PlainExamplePreferences extends ExtensionPreferences {
             POWER_BRIGHTNESS_SETTING
         ))
 
-        window.add(page);
+        const keyboardBacklightGroup = new Adw.PreferencesGroup({
+            title: 'Keyboard Backlight',
+            description: 'Automatically adjust keyboard backlight based on power state.'
+        })
 
+        page.add(keyboardBacklightGroup)
+
+        keyboardBacklightGroup.add(this.#createKeyboardRow(
+            'Backlight on Battery',
+            'Used when the device is running on battery power.',
+            BATTERY_KEYBOARD_SETTING
+        ))
+
+        keyboardBacklightGroup.add(this.#createKeyboardRow(
+            'Backlight when Plugged In',
+            'Used when the device is connected to AC power.',
+            POWER_KEYBOARD_SETTING
+        ))
+
+        window.add(page);
     }
 
     #createThemeRow(title, subtitle, key) {
@@ -104,5 +122,29 @@ export default class PlainExamplePreferences extends ExtensionPreferences {
         brightnessRow.add_suffix(brightnessSpinBox)
         brightnessRow.activatableWidget = brightnessSpinBox
         return brightnessRow
+    }
+
+    #createKeyboardRow(title, subtitle, key) {
+        const model = new Gtk.StringList()
+        model.append('Off')
+        model.append('Max Light')
+
+        const row = new Adw.ActionRow({ title, subtitle })
+        const combo = new Gtk.DropDown({ model })
+
+        // Set initial value
+        const current = this.#settings.get_int(key)
+        const index = current === 100 ? 1 : 0
+        combo.set_selected(index)
+
+        // Update setting when changed
+        combo.connect('notify::selected', () =>
+            this.#settings.set_int(key, combo.get_selected() === 1 ? 100 : 0)
+        )
+
+        row.add_suffix(combo)
+        row.activatableWidget = combo
+
+        return row
     }
 }

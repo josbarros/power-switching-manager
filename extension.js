@@ -93,9 +93,9 @@ export default class PlainExampleExtension extends Extension {
     }
 
     #applyBacklight(isOnBattery) {
-        // const desiredKeyboardSetting = isOnBattery ? BATTERY_KEYBOARD_SETTING : POWER_KEYBOARD_SETTING
-        // const newValue = this.#userSettingsClient.get_string(desiredKeyboardSetting)
-        const newValue = isOnBattery ? 0 : 100
+        const desiredKeyboardSetting = isOnBattery ? BATTERY_KEYBOARD_SETTING : POWER_KEYBOARD_SETTING
+        const newValue = this.#userSettingsClient.get_int(desiredKeyboardSetting)
+        // const newValue = isOnBattery ? 0 : 100
         const currentValue = this.#keyboardClient.Brightness
         if (currentValue === newValue) {
             return
