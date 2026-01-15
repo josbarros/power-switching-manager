@@ -71,9 +71,9 @@ export default class PlainExampleExtension extends Extension {
         if (!Main.brightnessManager?.globalScale) {
             return
         }
-        // const desiredBrightnessSetting = isOnBattery ? BATTERY_BRIGHTNESS_SETTING : POWER_BRIGHTNESS_SETTING
-        // const newValue = this.#userSettingsClient.get_string(desiredBrightnessSetting)
-        const newValue = isOnBattery ? 0.2 : 1.0
+        const desiredBrightnessSetting = isOnBattery ? BATTERY_BRIGHTNESS_SETTING : POWER_BRIGHTNESS_SETTING
+        const newValue = this.#userSettingsClient.get_double(desiredBrightnessSetting)
+        // const newValue = isOnBattery ? 0.2 : 1.0
         const currentValue = Main.brightnessManager.globalScale.value
         if (newValue === currentValue) {
             return // avoid rewritting the same value as the consequences are not known
