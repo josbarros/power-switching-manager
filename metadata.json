@@ -9,5 +9,6 @@
     "48",
     "49"
   ],
-  "settings-schema": "org.gnome.shell.extensions.power-switching-manager"
+  "settings-schema": "org.gnome.shell.extensions.power-switching-manager",
+  "license": "GPL-2.0-or-later"
 }

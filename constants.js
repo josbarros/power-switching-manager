@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+
 export const BATTERY_BRIGHTNESS_SETTING = "battery-brightness"
 export const POWER_BRIGHTNESS_SETTING = "power-brightness"
 export const BATTERY_THEME_SETTING = "battery-theme"
