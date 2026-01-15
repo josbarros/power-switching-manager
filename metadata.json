@@ -9,9 +9,5 @@
     "48",
     "49"
   ],
-  "session-modes": [
-    "user",
-    "unlock-dialog"
-  ],
   "settings-schema": "org.gnome.shell.extensions.plain-example"
 }
