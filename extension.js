@@ -73,7 +73,6 @@ export default class PlainExampleExtension extends Extension {
         }
         const desiredBrightnessSetting = isOnBattery ? BATTERY_BRIGHTNESS_SETTING : POWER_BRIGHTNESS_SETTING
         const newValue = this.#userSettingsClient.get_double(desiredBrightnessSetting)
-        // const newValue = isOnBattery ? 0.2 : 1.0
         const currentValue = Main.brightnessManager.globalScale.value
         if (newValue === currentValue) {
             return // avoid rewritting the same value as the consequences are not known
@@ -83,7 +82,6 @@ export default class PlainExampleExtension extends Extension {
 
     #applyTheme(isOnBattery) {
         const desiredThemeSetting = isOnBattery ? BATTERY_THEME_SETTING : POWER_THEME_SETTING
-        // const newTheme = isOnBattery ? "default" : "prefer-dark"
         const newTheme = this.#userSettingsClient.get_string(desiredThemeSetting)
         const currentTheme = this.#gnomeSettingsClient.get_string(GNOME_THEME_SETTING)
         if (newTheme === currentTheme) {
@@ -95,7 +93,6 @@ export default class PlainExampleExtension extends Extension {
     #applyBacklight(isOnBattery) {
         const desiredKeyboardSetting = isOnBattery ? BATTERY_KEYBOARD_SETTING : POWER_KEYBOARD_SETTING
         const newValue = this.#userSettingsClient.get_int(desiredKeyboardSetting)
-        // const newValue = isOnBattery ? 0 : 100
         const currentValue = this.#keyboardClient.Brightness
         if (currentValue === newValue) {
             return
