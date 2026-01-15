@@ -20,6 +20,7 @@ import {
     BATTERY_THEME_SETTING, POWER_THEME_SETTING,
     BATTERY_KEYBOARD_SETTING, POWER_KEYBOARD_SETTING
 } from './constants.js'
+const GNOME_THEME_SETTING = "color-scheme"
 
 import Gio from 'gi://Gio'
 import UPowerGlib from 'gi://UPowerGlib'
@@ -36,8 +37,6 @@ export default class PlainExampleExtension extends Extension {
     #powerClient
     #userSettingsClient
     #keyboardClient
-
-    static #GNOME_THEME_SETTING = "color-scheme"
 
     enable() {
         this.#gnomeSettingsClient = new Gio.Settings({ schema_id: 'org.gnome.desktop.interface' })
@@ -86,11 +85,11 @@ export default class PlainExampleExtension extends Extension {
         const desiredThemeSetting = isOnBattery ? BATTERY_THEME_SETTING : POWER_THEME_SETTING
         // const newTheme = isOnBattery ? "default" : "prefer-dark"
         const newTheme = this.#userSettingsClient.get_string(desiredThemeSetting)
-        const currentTheme = this.#gnomeSettingsClient.get_string(PlainExampleExtension.#GNOME_THEME_SETTING)
+        const currentTheme = this.#gnomeSettingsClient.get_string(GNOME_THEME_SETTING)
         if (newTheme === currentTheme) {
             return // avoid rewritting the same string as the consequences are not known
         }
-        this.#gnomeSettingsClient.set_string(PlainExampleExtension.#GNOME_THEME_SETTING, newTheme)
+        this.#gnomeSettingsClient.set_string(GNOME_THEME_SETTING, newTheme)
     }
 
     #applyBacklight(isOnBattery) {
