@@ -2,6 +2,8 @@
 
 A GNOME Shell extension that automatically switches your theme, screen brightness, and keyboard backlight based on whether your device is running on battery power or plugged into AC power.
 
+![Extension Screenshot](screenshot.png)
+
 ## Features
 
 - **Automatic Theme Switching**: Seamlessly switch between light and dark themes depending on power state

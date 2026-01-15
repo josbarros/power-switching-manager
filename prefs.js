@@ -105,19 +105,18 @@ export default class PowerSwitchingManagerPreferences extends ExtensionPreferenc
     #createBrightnessRow(title, subtitle, key) {
         const adjustment = new Gtk.Adjustment({
             lower: 0,
-            upper: 1,
-            step_increment: 0.1
+            upper: 100,
+            step_increment: 10
         })
 
         const brightnessSpinBox = new Gtk.SpinButton({
             adjustment,
-            valign: Gtk.Align.CENTER,
-            digits: 1
+            valign: Gtk.Align.CENTER
         });
 
-        brightnessSpinBox.set_value(this.#settings.get_double(key))
+        brightnessSpinBox.set_value(this.#settings.get_double(key) * 100)
         brightnessSpinBox.connect('value-changed', () =>
-            this.#settings.set_double(key, brightnessSpinBox.get_value())
+            this.#settings.set_double(key, brightnessSpinBox.get_value() / 100)
         )
 
         const brightnessRow = new Adw.ActionRow({ title, subtitle })
