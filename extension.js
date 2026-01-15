@@ -32,7 +32,7 @@ import { loadInterfaceXML } from 'resource:///org/gnome/shell/misc/fileUtils.js'
 const BrightnessInterface = loadInterfaceXML('org.gnome.SettingsDaemon.Power.Keyboard');
 const BrightnessProxy = Gio.DBusProxy.makeProxyWrapper(BrightnessInterface);
 
-export default class PlainExampleExtension extends Extension {
+export default class PowerSwitchingManagerExtension extends Extension {
     #gnomeSettingsClient
     #powerClient
     #userSettingsClient

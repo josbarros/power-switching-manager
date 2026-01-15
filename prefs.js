@@ -3,7 +3,7 @@ import Gtk from 'gi://Gtk'
 import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js'
 import { BATTERY_BRIGHTNESS_SETTING, POWER_BRIGHTNESS_SETTING, BATTERY_THEME_SETTING, POWER_THEME_SETTING, BATTERY_KEYBOARD_SETTING, POWER_KEYBOARD_SETTING } from './constants.js'
 
-export default class PlainExamplePreferences extends ExtensionPreferences {
+export default class PowerSwitchingManagerPreferences extends ExtensionPreferences {
     #settings
 
     fillPreferencesWindow(window) {

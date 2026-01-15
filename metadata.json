@@ -1,7 +1,7 @@
 {
-  "name": "teste um",
-  "description": "teste um",
-  "uuid": "teste1",
+  "name": "Power Switching Manager",
+  "description": "Automatically switch theme and brightness based on power state",
+  "uuid": "power-switching-manager@joseruibarros.com",
   "shell-version": [
     "45",
     "46",
@@ -9,5 +9,5 @@
     "48",
     "49"
   ],
-  "settings-schema": "org.gnome.shell.extensions.plain-example"
+  "settings-schema": "org.gnome.shell.extensions.power-switching-manager"
 }

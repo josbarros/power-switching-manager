@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
   <schema
-    id="org.gnome.shell.extensions.plain-example"
-    path="/org/gnome/shell/extensions/plain-example/">
+    id="org.gnome.shell.extensions.power-switching-manager"
+    path="/org/gnome/shell/extensions/power-switching-manager/">
 
     <key name="battery-theme" type="s">
       <default>'default'</default>
