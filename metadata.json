@@ -2,6 +2,7 @@
   "name": "Power Switching Manager",
   "description": "Automatically switch theme and brightness based on power state",
   "uuid": "power-switching-manager@joseruibarros.com",
+  "url": "https://github.com/josbarros/power-switching-manager",
   "shell-version": [
     "45",
     "46",
