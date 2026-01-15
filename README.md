@@ -27,29 +27,14 @@ A GNOME Shell extension that automatically switches your theme, screen brightnes
    - Using GNOME Tweaks or the Extensions app
    - Or via command line: `gnome-extensions enable power-switching-manager@joseruibarros.com`
 
-## Configuration
-
-Access the extension preferences through:
-- GNOME Extensions app (search for "Power Switching Manager")
-- GNOME Tweaks > Extensions > Power Switching Manager
-
-### Available Settings
-
-- **Theme on Battery**: Choose which color scheme to use when running on battery power
-- **Theme when Plugged In**: Choose which color scheme to use when connected to AC power
-- **Brightness on Battery**: Set screen brightness level for battery mode
-- **Brightness when Plugged In**: Set screen brightness level for AC mode
-- **Backlight on Battery**: Set keyboard backlight intensity on battery power
-- **Backlight when Plugged In**: Set keyboard backlight intensity on AC power
-
 ## Compatibility
 
-- GNOME Shell 45, 46, 47, 48, 49
+- GNOME Shell 45+
+
+## Acknowledgments
+
+This extension was inspired by the [Screen Brightness Governor](https://github.com/inbalboa/gnome-brightness-governor) extension by [inbalboa](https://github.com/inbalboa).
 
 ## License
 
 This project is licensed under the GNU General Public License v2.0 or later. See the [LICENSE](LICENSE) file for details.
-
-## Author
-
-Jose Rui Barros
