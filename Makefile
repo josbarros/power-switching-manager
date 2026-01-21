@@ -31,15 +31,17 @@ compile-schemas:
 		echo "No schema XML found at $(SCHEMA_XML) — skipping compile"; \
 	fi
 
-zip: compile-schemas
-	@echo "Creating distributable zip"
-	@rm -f $(EXTENSION_UUID).zip
-	@zip -r $(EXTENSION_UUID).zip . -x '*.git*' -x '*/.DS_Store' -x '*/node_modules/*' -x '$(SCHEMA_DIR)/gschemas.compiled' -x 'Makefile' -x '*.zip'
-	@echo "Created $(EXTENSION_UUID).zip"
-
 clean:
-	@rm -f $(EXTENSION_UUID).zip
+	@rm -f $(EXTENSION_UUID).shell-extension.zip
 	@rm -f "$(COMPILED_SCHEMAS)"
 	@echo "Cleaned build artifacts"
+
+zip: clean
+	@echo "Creating distributable zip"
+	@gnome-extensions pack \
+	--extra-source="constants.js" \
+	--extra-source="LICENSE" \
+	--extra-source="README.md" 
+	@echo "Created $(EXTENSION_UUID).shell-extension.zip"
 
 dist: zip
