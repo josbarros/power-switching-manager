@@ -8,7 +8,6 @@ Use `make install` to reinstall the extension into `~/.local/share/gnome-shell/e
 
 ## Coding Style & Naming Conventions
 Follow the existing GJS style: 4-space indentation, semicolons used inconsistently, and ES module imports with GNOME libraries first when practical. Keep exported constants in `UPPER_SNAKE_CASE`, private class fields and helper methods with `#camelCase`, and extension classes in `PascalCase`. Prefer small, direct methods and preserve SPDX headers in JS files.
-Before proposing or implementing any file change, show the concrete diff first and wait for approval.
 
 ## Testing Guidelines
 There is no automated test suite in this repository today. Validate changes by running `make zip`, `make install`, and exercising both power states in GNOME Shell. When changing preferences or power behavior, confirm theme, screen brightness, and keyboard backlight updates from the extension and preferences window without schema warnings. When changing the GitHub workflow, test the `workflow_dispatch` dry-run path before any real upload.
