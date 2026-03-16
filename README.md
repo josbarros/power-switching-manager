@@ -15,14 +15,15 @@ A GNOME Shell extension that automatically switches your theme, screen brightnes
 
 ### From Source
 
-1. Clone or download this extension to your local GNOME extensions directory:
+1. Clone or download this repository:
    ```bash
-   git clone https://github.com/yourusername/power-switching-manager ~/.local/share/gnome-shell/extensions/power-switching-manager
+   git clone https://github.com/josbarros/power-switching-manager
+   cd power-switching-manager
    ```
 
-2. Compile the GSettings schema:
+2. Install the extension:
    ```bash
-   glib-compile-schemas ~/.local/share/gnome-shell/extensions/power-switching-manager/schemas/
+   make install
    ```
 
 3. Enable the extension:
