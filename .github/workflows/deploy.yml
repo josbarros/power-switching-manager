@@ -1,13 +1,15 @@
-name: Build Zip
+name: Upload To GNOME Extensions
 
 on:
-  push:
-    branches:
-      - '**'
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Use a dummy upload endpoint instead of publishing to GNOME Extensions
+        type: boolean
+        default: true
 
 jobs:
-  build-zip:
+  upload-extension:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -16,8 +18,56 @@ jobs:
       - name: Create zip
         run: make zip
 
-      - name: Upload zip artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: power-switching-manager-zip
-          path: power-switching-manager@joseruibarros.com.zip
+      - name: Login to extensions.gnome.org
+        id: ego-login
+        env:
+          EGO_LOGIN: ${{ secrets.EGO_LOGIN }}
+          EGO_PASSWORD: ${{ secrets.EGO_PASSWORD }}
+        run: |
+          if [ -z "$EGO_LOGIN" ]; then
+            echo "EGO_LOGIN secret is not set"
+            exit 1
+          fi
+
+          if [ -z "$EGO_PASSWORD" ]; then
+            echo "EGO_PASSWORD secret is not set"
+            exit 1
+          fi
+
+          token="$(
+            curl --fail-with-body --show-error --silent \
+              -X POST https://extensions.gnome.org/api/v1/accounts/login/ \
+              -H "Content-Type: application/json" \
+              -d "{\"login\":\"$EGO_LOGIN\",\"password\":\"$EGO_PASSWORD\"}" \
+            | jq -r '.token.token'
+          )"
+
+          if [ -z "$token" ] || [ "$token" = "null" ]; then
+            echo "Failed to obtain API token from login response"
+            exit 1
+          fi
+
+          echo "::add-mask::$token"
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+
+      - name: Dummy upload request
+        if: ${{ inputs.dry_run }}
+        run: |
+          curl --fail-with-body --show-error --silent \
+            -X POST \
+            -H "Authorization: Token ${{ steps.ego-login.outputs.token }}" \
+            -F "source=@power-switching-manager@joseruibarros.com.zip" \
+            -F "shell_license_compliant=true" \
+            -F "tos_compliant=true" \
+            https://httpbin.org/post
+
+      - name: Upload to extensions.gnome.org
+        if: ${{ !inputs.dry_run }}
+        run: |
+          curl --fail-with-body --show-error --silent \
+            -X POST \
+            -H "Authorization: Token ${{ steps.ego-login.outputs.token }}" \
+            -F "source=@power-switching-manager@joseruibarros.com.zip" \
+            -F "shell_license_compliant=true" \
+            -F "tos_compliant=true" \
+            https://extensions.gnome.org/api/v1/extensions
