@@ -85,6 +85,11 @@ export default class PowerSwitchingManagerExtension extends Extension {
         this.#keyboardClient.Brightness = newValue
     }
 
+    /*
+    This extension supports unlock-dialog to keep applying power settings while
+    the screen is locked. GNOME Shell may disable and re-enable extensions when
+    switching session modes, so disable() must disconnect every signal handler.
+    */
     disable() {
         this.#userSettingsClient?.disconnectObject(this)
         this.#powerClient?.disconnectObject(this)
