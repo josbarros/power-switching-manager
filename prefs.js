@@ -10,6 +10,10 @@ export default class PowerSwitchingManagerPreferences extends ExtensionPreferenc
 
     fillPreferencesWindow(window) {
         this.#settings = this.getSettings()
+        window.connect('close-request', () => {
+            this.#settings = null
+            return false
+        })
 
         const page = new Adw.PreferencesPage({
             title: 'Appearance',
